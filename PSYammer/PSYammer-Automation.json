@@ -1,0 +1,19 @@
+{
+  "ConnectionFields": [
+    {
+      "IsEncrypted": false,
+      "IsOptional": false,
+      "Name": "ClientID",
+      "TypeName": "System.String"
+    },
+    {
+      "IsEncrypted": true,
+      "IsOptional": false,
+      "Name": "AdminToken",
+      "TypeName": "System.String"
+    }
+  ],
+  "ConnectionTypeName": "Yammer",
+  "IntegrationModuleName":  "PSYammer"
+}
+
