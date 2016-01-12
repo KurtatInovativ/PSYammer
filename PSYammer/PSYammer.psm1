@@ -329,3 +329,15 @@ function New-YammerGroup {
 		}
 	}
 }
+
+
+#region Handle Module Removal
+$ExecutionContext.SessionState.Module.OnRemove ={
+    Remove-Variable YammerBaseUri -Scope Global -Force
+    Remove-Variable YammerUserUri -Scope Global -Force
+    Remove-Variable YammerGroupUri -Scope Global -Force
+    Remove-Variable YammerGroupMembershipUri -Scope Global -Force
+    Remove-Variable ClientId -Scope Global -Force
+	Remove-Variable ClientId -Scope Global -Force
+}
+#endregion Handle Module Removal
