@@ -338,6 +338,6 @@ $ExecutionContext.SessionState.Module.OnRemove ={
     Remove-Variable YammerGroupUri -Scope Global -Force
     Remove-Variable YammerGroupMembershipUri -Scope Global -Force
     Remove-Variable ClientId -Scope Global -Force
-	Remove-Variable ClientId -Scope Global -Force
+	Remove-Variable AdminToken -Scope Global -Force
 }
 #endregion Handle Module Removal
