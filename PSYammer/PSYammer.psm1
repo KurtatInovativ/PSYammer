@@ -1,11 +1,11 @@
-$script:YammerBaseUri = 'https://www.yammer.com/api/v1'
-$script:YammerUserUri = '{0}/{1}' -f $script:YammerBaseUri, 'users.json'
-$script:YammerGroupUri = '{0}/{1}' -f $script:YammerBaseUri, 'groups.json'
-#$script:YammerSearchUri = '{0}/{1}' -f $script:YammerBaseUri, 'autocomplete/ranked?prefix='
-$script:YammerUserTokenUri = '{0}/{1}' -f $script:YammerBaseUri, 'oauth/tokens.json'
-$script:YammerGroupMembershipUri = '{0}/{1}' -f $script:YammerBaseUri, 'group_memberships.json?group_id='
-$script:ClientId = $null
-$script:AdminToken = $null
+$Global:YammerBaseUri = 'https://www.yammer.com/api/v1'
+$Global:YammerUserUri = '{0}/{1}' -f $Global:YammerBaseUri, 'users.json'
+$Global:YammerGroupUri = '{0}/{1}' -f $Global:YammerBaseUri, 'groups.json'
+#$Global:YammerSearchUri = '{0}/{1}' -f $Global:YammerBaseUri, 'autocomplete/ranked?prefix='
+$Global:YammerUserTokenUri = '{0}/{1}' -f $Global:YammerBaseUri, 'oauth/tokens.json'
+$Global:YammerGroupMembershipUri = '{0}/{1}' -f $Global:YammerBaseUri, 'group_memberships.json?group_id='
+$Global:ClientId = $null
+$Global:AdminToken = $null
 
 
 function Connect-Yammer {
@@ -49,12 +49,12 @@ function Connect-Yammer {
 	)
 
 	if($PSCmdlet.ParameterSetName -eq 'Connection') {
-		$script:AdminToken = $Connection.AdminToken
-		$script:ClientId = $Connection.ClientId
+		$Global:AdminToken = $Connection.AdminToken
+		$Global:ClientId = $Connection.ClientId
 	}
 	else {
-		$script:AdminToken = $AdminToken
-		$script:ClientId = $ClientId
+		$Global:AdminToken = $AdminToken
+		$Global:ClientId = $ClientId
 	}
 }
 
@@ -92,12 +92,12 @@ function Get-YammerGroup {
 	)
 
 	Begin {
-		if (!($script:AdminToken)){
+		if (!($Global:AdminToken)){
 			Throw 'Use Connect-Yammer to authenticate before using this function'
 		}
 		$Headers  = @{
             "Accept" = "*/*"
-            "Authorization" = "Bearer "+$script:AdminToken
+            "Authorization" = "Bearer "+$Global:AdminToken
             "accept-encoding" = "gzip"
             "content-type" = "application/json"
         }
@@ -105,11 +105,11 @@ function Get-YammerGroup {
 
 	Process {
 		if($Name) {
-			#$GroupUri = '{0}{1}&models=group:{2}' -f $script:YammerSearchUri,$Name,$ReturnCount
-            $GroupUri = '{0}?letter={1}' -f $script:YammerGroupUri, $Name 
+			#$GroupUri = '{0}{1}&models=group:{2}' -f $Global:YammerSearchUri,$Name,$ReturnCount
+            $GroupUri = '{0}?letter={1}' -f $Global:YammerGroupUri, $Name 
 		}
 		else {
-			$GroupUri = $script:YammerGroupUri
+			$GroupUri = $Global:YammerGroupUri
 		}
 		$GroupJson = Invoke-WebRequest -Uri $GroupUri -Method Get -Headers $Headers
 		$Groups = ConvertFrom-Json -InputObject $GroupJson 
@@ -176,7 +176,7 @@ function GetYammerUserToken {
 	)
 	Begin {
 
-		if(!($script:AdminToken) -or !($script:ClientId)) {
+		if(!($Global:AdminToken) -or !($Global:ClientId)) {
 			Throw 'Use Connect-Yammer to authenticate before using this function'
 		}
 
@@ -187,14 +187,14 @@ function GetYammerUserToken {
 		# Request Headers
 	    $Headers = @{
         "Accept" = "*/*"
-        "Authorization" = "Bearer "+ $script:AdminToken
+        "Authorization" = "Bearer "+ $Global:AdminToken
         "accept-encoding" = "gzip"
         "content-type"="application/json"
 		}
 	}
 	Process {
 		# Get Yammer user token
-		$YammerUsersJson = (Invoke-WebRequest -Uri $script:YammerUserUri -Method Get -Headers $Headers)
+		$YammerUsersJson = (Invoke-WebRequest -Uri $Global:YammerUserUri -Method Get -Headers $Headers)
  		$YammerUsers = $YammerUsersJson | ConvertFrom-Json
 		foreach ($YammerUser in $YammerUsers)
 		{
@@ -203,7 +203,7 @@ function GetYammerUserToken {
 				$YammerUserId = $YammerUser.id
 			}
 		}
-			$UserTokenUri = '{0}?user_id={1}&consumer_key={2}' -f $script:YammerUserTokenUri, $YammerUserId, $script:ClientId
+			$UserTokenUri = '{0}?user_id={1}&consumer_key={2}' -f $Global:YammerUserTokenUri, $YammerUserId, $Global:ClientId
 			$UserToken = (Invoke-WebRequest -Uri $UserTokenUri -Method Get -Headers $Headers).content | ConvertFrom-Json
 			$CustomUserToken = $UserToken.token
 			$CustomUserToken
@@ -249,7 +249,7 @@ function Add-YammerGroupMember {
     }
 	#get the group
 	$Group = Get-YammerGroup -Name $group
-	$AddGroupMembershipUri = '{0}{1}' -f $script:YammerGroupMembershipUri, $Groups.Id
+	$AddGroupMembershipUri = '{0}{1}' -f $Global:YammerGroupMembershipUri, $Groups.Id
     $Result = Invoke-WebRequest -Uri $AddGroupMembershipUri -Method Post -Headers $Headers }
 
 function New-YammerGroup {	
@@ -283,13 +283,13 @@ function New-YammerGroup {
 		[switch]$Private = $true
 	)
 	Begin {
-		if(!($script:AdminToken)) {
+		if(!($Global:AdminToken)) {
 			Throw 'Use Connect-Yammer to authenticate before using this function'
 		}
 		# Request Headers
 	    $Headers = @{
         "Accept" = "*/*"
-        "Authorization" = "Bearer "+ $script:AdminToken
+        "Authorization" = "Bearer "+ $Global:AdminToken
         "accept-encoding" = "gzip"
         "content-type"="application/json"
 		}
@@ -303,7 +303,7 @@ function New-YammerGroup {
 		}
 		else {
 			#create the group
-			$groupUri = '{0}?name={1}&private={2}' -f $script:YammerGroupUri, $Name, $Private
+			$groupUri = '{0}?name={1}&private={2}' -f $Global:YammerGroupUri, $Name, $Private
 			$result = Invoke-WebRequest -Uri $groupUri -Method Post -Headers $Headers
 			$Group = ConvertFrom-Json -InputObject $result
 
@@ -329,3 +329,15 @@ function New-YammerGroup {
 		}
 	}
 }
+
+
+#region Handle Module Removal
+$ExecutionContext.SessionState.Module.OnRemove ={
+    Remove-Variable YammerBaseUri -Scope Global -Force
+    Remove-Variable YammerUserUri -Scope Global -Force
+    Remove-Variable YammerGroupUri -Scope Global -Force
+    Remove-Variable YammerGroupMembershipUri -Scope Global -Force
+    Remove-Variable ClientId -Scope Global -Force
+	Remove-Variable AdminToken -Scope Global -Force
+}
+#endregion Handle Module Removal
